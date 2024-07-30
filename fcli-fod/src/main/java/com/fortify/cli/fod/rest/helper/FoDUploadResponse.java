@@ -39,4 +39,5 @@ public class FoDUploadResponse extends JsonNodeHolder {
     Integer scanId;
     ArrayList<String> messages;
     String referenceId;
+    String legalMessage;
 }
