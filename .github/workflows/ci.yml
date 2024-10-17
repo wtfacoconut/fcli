@@ -94,7 +94,7 @@ jobs:
           name: build-output
 
       - name: Create native fcli
-        run: native-image ${{ env.native_image_opts }} --static --libc glibc -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
+        run: native-image ${{ env.native_image_opts }} --static --libc=glibc -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
 
       - name: Basic test of native fcli
         run: ./fcli --help && ./fcli get --help
