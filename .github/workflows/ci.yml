@@ -76,7 +76,7 @@ jobs:
   native_linux_arm64:
     name: native-image-linux-arm64
     needs: build
-    runs-on: self-hosted-ubuntu-20.04-arm64
+    runs-on: self-hosted-ubuntu-22.04-arm64
     steps:
       - name: Check-out source code
         uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
           name: build-output
 
       - name: Create native fcli
-        run: native-image ${{ env.native_image_opts }} --static --libc glibc -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
+        run: native-image ${{ env.native_image_opts }} --static -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
 
       - name: Basic test of native fcli
         run: ./fcli --help && ./fcli get --help
