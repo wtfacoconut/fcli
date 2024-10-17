@@ -9,7 +9,7 @@ on:
 env:
   native_image_opts: --verbose -H:Log=registerResource:verbose -H:+PrintClassInitialization
   graal_distribution: graalvm-community
-  graal_java_version: 21
+  graal_java_version: 23
           
 jobs:
   build:
@@ -18,37 +18,12 @@ jobs:
     steps:
       - name: Check-out source code
         uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: PROD - Prepare GitHub release
-        id: create_prod_release
-        uses: googleapis/release-please-action@v4
-        if: github.ref == 'refs/heads/v2.x'
-        with:
-          skip-github-pull-request: true
-          target-branch: v2.x
-          release-type: simple
-          
-      - name: PROD - Define release info
-        if: steps.create_prod_release.outputs.release_created
-        run: |
-          tag=${{steps.create_prod_release.outputs.tag_name}}
-          version=${{steps.create_prod_release.outputs.version}}
-          major=${{steps.create_prod_release.outputs.major}}
-          minor=${{steps.create_prod_release.outputs.minor}}
-          patch=${{steps.create_prod_release.outputs.patch}}  
-          echo DO_BUILD=true >> $GITHUB_ENV
-          echo DO_RELEASE=true >> $GITHUB_ENV
-          echo DO_PROD_RELEASE=true >> $GITHUB_ENV
-          echo RELEASE_TAG=${tag} >> $GITHUB_ENV
-          echo RELEASE_VERSION=${version} >> $GITHUB_ENV
-          echo VERSION_MAJOR=${major} >> $GITHUB_ENV
-          echo VERSION_MINOR=${minor} >> $GITHUB_ENV
-          echo VERSION_PATCH=${patch} >> $GITHUB_ENV
-          
       - name: DEV - Define release info
         if: startsWith(github.ref, 'refs/heads/') && !env.DO_PROD_RELEASE
         run: |
@@ -98,59 +73,6 @@ jobs:
       version_minor: ${{ env.VERSION_MINOR }}
       version_patch: ${{ env.VERSION_PATCH }}
 
-#  native_linux:
-#    name: native-image-linux
-#    needs: build
-#    runs-on: ubuntu-22.04
-##    env:
-##      TOOLCHAIN_BASE: /opt/musl_cc
-##      TOOLCHAIN_DIR: /opt/musl_cc/x86_64-linux-musl-native
-##      CC: /opt/musl_cc/x86_64-linux-musl-native/bin/gcc
-#    steps:
-#      - name: Check-out source code
-#        uses: actions/checkout@v4
-#
-#      - uses: graalvm/setup-graalvm@v1
-#        with:
-#          distribution: ${{ env.graal_distribution }}
-#          java-version: ${{ env.graal_java_version }}
-#          native-image-musl: true
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - uses: actions/download-artifact@v4
-#        with:
-#          path: ./artifacts
-#          name: build-output
-#
-#      # For Linux, we build a statically linked native image, to allow for building a 'FROM scratch'
-#      # Docker image, and to avoid libc version issues. Since Jansi is not supported on statically
-#      # linked images (see https://github.com/fusesource/jansi/issues/246), we set a system property
-#      # to indicate that FortifyCLI shouldn't try to invoke AnsiConsole::systemInstall/Uninstall. In
-#      # order for FortifyCLI to be able to see this system property, we need to initialize this class
-#      # at build time (see https://www.graalvm.org/22.1/reference-manual/native-image/Properties/).
-#      # We also exclude the native Jansi library resources, as these are now no longer needed.
-#      - name: Create native fcli
-#        run: native-image ${{ env.native_image_opts }} --static --libc=musl -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
-#
-#      - name: Compress native fcli
-#        uses: svenstaro/upx-action@v2
-#        with:
-#          files: fcli
-#
-#      - name: Basic test of native fcli
-#        run: ./fcli --help && ./fcli get --help
-#
-#      - name: Check fcli version
-#        run: ./fcli --version | tee /dev/stderr | grep -E '[0-9]+\.[0-9]+\.[0-9]+' >/dev/null || (echo "fcli --version doesn't output proper version number"; exit 1)
-#
-#      - name: Package native fcli
-#        run: tar -zcvf artifacts/release-assets/fcli-linux.tgz fcli -C ./artifacts fcli_completion
-#
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          path: ./artifacts/**/fcli-linux.tgz
-#          name: fcli-linux
-
   native_linux_arm64:
     name: native-image-linux-arm64
     needs: build
@@ -188,92 +110,6 @@ jobs:
           path: ./artifacts/**/fcli-linux-arm64.tgz
           name: fcli-linux-arm64
 
-#  native_mac:
-#    name: native-image-mac
-#    needs: build
-#    runs-on: macos-latest
-#    steps:
-#      - name: Check-out source code
-#        uses: actions/checkout@v4
-#
-#      - uses: graalvm/setup-graalvm@v1
-#        with:
-#          distribution: ${{ env.graal_distribution }}
-#          java-version: ${{ env.graal_java_version }}
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - uses: actions/download-artifact@v4
-#        with:
-#          path: ./artifacts
-#          name: build-output
-#
-#      # For MacOS, we build a dynamically linked image. Jansi by default provides a resource-config.json
-#      # file to include native libraries for all platforms; we override this to include only the MacOS
-#      # libraries
-#      - name: Create native fcli
-#        run: native-image ${{ env.native_image_opts }} -march=compatibility -H:ExcludeResources="org/fusesource/jansi/internal/native/Windows/.*" -H:ExcludeResources="org/fusesource/jansi/internal/native/Linux/.*" -H:ExcludeResources="org/fusesource/jansi/internal/native/FreeBSD/.*" -jar ./artifacts/release-assets/fcli.jar fcli
-#
-#      # Disabled for now, as compressed binaries crash on macOS Ventura or above
-#      #- name: Compress native fcli
-#      #  uses: svenstaro/upx-action@v2
-#      #  with:
-#      #    files: fcli
-#
-#      - name: Basic test of native fcli
-#        run: ./fcli --help && ./fcli get --help
-#
-#      - name: Package native fcli
-#        run: tar -zcvf ./artifacts/release-assets/fcli-mac.tgz fcli -C ./artifacts fcli_completion
-#
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          path: ./artifacts/**/fcli-mac.tgz
-#          name: fcli-mac
-
-#  native_win:
-#    name: native-image-win
-#    needs: build
-#    runs-on: windows-2022
-#    steps:
-#      - uses: graalvm/setup-graalvm@v1
-#        with:
-#          distribution: ${{ env.graal_distribution }}
-#          java-version: ${{ env.graal_java_version }}
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - uses: actions/download-artifact@v4
-#        with:
-#          path: ./artifacts
-#          name: build-output
-#
-#    # For Windows, we build a dynamically linked image. Jansi by default provides a resource-config.json
-#    # file to include native libraries for all platforms; we override this to include only the 64-bit
-#    # Windows library
-#      - name: Create native fcli
-#        run: >-
-#          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
-#          ${{ env.JAVA_HOME }}\bin\native-image.cmd ${{ env.native_image_opts }} -H:ExcludeResources="org/fusesource/jansi/internal/native/Mac/.*" -H:ExcludeResources="org/fusesource/jansi/internal/native/Linux/.*" -H:ExcludeResources="org/fusesource/jansi/internal/native/FreeBSD/.*" -jar .\artifacts\release-assets\fcli.jar fcli
-#        shell: cmd
-#
-## We don't compress the Windows binary for now as this is incompatible with current Graal version.
-## See https://github.com/fortify/fcli/issues/148
-##      - name: Compress native fcli
-##        uses: svenstaro/upx-action@v2
-##        with:
-##          files: fcli.exe
-#
-#      - name: Basic test of native fcli
-#        run: |
-#          .\fcli.exe --help
-#          .\fcli.exe get --help
-#
-#      - name: Package native fcli
-#        run: 7z a artifacts\release-assets\fcli-windows.zip fcli*.exe
-#
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          path: ./artifacts/**/fcli-windows.zip
-
   docker-linux-arm64:
     needs: [build, native_linux_arm64]
     runs-on: self-hosted-ubuntu-20.04-arm64
@@ -301,12 +137,6 @@ jobs:
               docker run --rm -u $(id -u):$(id -g) -v ${PWD}/${i}:/data fcli-${i} fcli tool sc-client ls
             done
 
-#        - name: Docker Login
-#          if: needs.build.outputs.do_release
-#          uses: docker/login-action@v3
-#          with:
-#            username: ${{ secrets.DOCKER_USERNAME }}
-#            password: ${{ secrets.DOCKER_PASSWORD }}
 
         - name: DEV - Tag Linux images
           if: needs.build.outputs.do_dev_release
@@ -334,188 +164,3 @@ jobs:
           with:
             path: ./fcli-images/*.tar
             name: fcli-linux-arm64-images
-
-        # TODO Should we sign the images as well?
-#        - name: Publish Linux Docker images
-#          if: needs.build.outputs.do_release
-#          shell: bash
-#          run: |
-#            docker push --all-tags fortifydocker/fcli
-
-#          name: fcli-windows
-  combine-artifacts:
-    needs: [build, native_linux_arm64, docker-linux-arm64]
-    #needs: [build, native_linux, native_mac, native_win]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-          merge-multiple: true
-      - run: |
-          cd ./artifacts/release-assets
-      - uses: actions/upload-artifact@v4
-        with:
-          path: ./artifacts
-          name: combined-artifacts
-  # For now, we only publish fcli-scratch image, but we do build the other images just for testing
-  # For now, we only publish fcli-scratch Linux image, but we do build the Windows images just for testing
-#  docker-win:
-#    needs: [build, native_win]
-#    runs-on: windows-2022
-#    env:
-#      DOCKER_SRC: fcli-other/fcli-docker/windows
-#    steps:
-#        - name: Check-out source code
-#          uses: actions/checkout@v4
-#
-#        - name: Download artifacts
-#          uses: actions/download-artifact@v4
-#          with:
-#            path: ./artifacts
-#            name: fcli-windows
-#
-#        - name: Build & test Windows images
-#          shell: bash
-#          run: |
-#            unzip ./artifacts/release-assets/fcli-windows.zip -d ${DOCKER_SRC}
-#            cd ${DOCKER_SRC}
-#            for i in ltsc2022
-#            do
-#              docker build . --target fcli-${i} -t fcli-${i}
-#              # Following doesn't work yet, hence the echo statements instead of actually running these.
-#              # Likely, we need to pass Windows-style paths to volume mappings in docker run command
-#              mkdir ${PWD}/${i}
-#              echo docker run --rm -v ${PWD}/${i}:/data fcli-${i} fcli tool sc-client install
-#              echo test -f ${PWD}/${i}/fortify/tools/bin/scancentral
-#            done
-#
-#        - name: DEV - Tag Windows images
-#          if: needs.build.outputs.do_dev_release
-#          shell: bash
-#          run: |
-#            docker tag fcli-ltsc2022 fortifydocker/fcli:${{needs.build.outputs.release_tag}}
-#
-#        - name: PROD - Tag Windows images
-#          if: needs.build.outputs.do_prod_release
-#          shell: bash
-#          run: |
-#            docker tag fcli-ltsc2022 fortifydocker/fcli:ltsc2022-latest
-#            docker tag fcli-ltsc2022 fortifydocker/fcli:ltsc2022-${{needs.build.outputs.version_major}}
-#            docker tag fcli-ltsc2022 fortifydocker/fcli:ltsc2022-${{needs.build.outputs.version_major}}.${{needs.build.outputs.version_minor}}
-#            docker tag fcli-ltsc2022 fortifydocker/fcli:ltsc2022-${{needs.build.outputs.version_major}}.${{needs.build.outputs.version_minor}}.${{needs.build.outputs.version_patch}}
-#
-#        #- name: Docker Login
-#        #  if: needs.build.outputs.do_release
-#        #  uses: docker/login-action@v3
-#        #  with:
-#        #    username: ${{ secrets.DOCKER_USERNAME }}
-#        #    password: ${{ secrets.DOCKER_PASSWORD }}
-#        # TODO Should we sign the images as well?
-#        #- name: Publish Linux Docker images
-#        #  if: needs.build.outputs.do_release
-#        #  shell: bash
-#        #  run: |
-#        #    docker push --all-tags fortifydocker/fcli
-  
-  release:
-    name: release
-    if: needs.build.outputs.do_release
-    needs: [build, native_linux_arm64, combine-artifacts]
-    #needs: [build, native_linux, native_mac, native_win, combine-artifacts]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check-out source code
-        uses: actions/checkout@v4
-        
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-          name: combined-artifacts
-          
-      - name: PROD - Prepare release PR
-        if: github.ref == 'refs/heads/v2.x'
-        uses: googleapis/release-please-action@v4
-        with:
-          skip-github-release: true
-          release-type: simple
-          target-branch: v2.x
-          
-      - name: DEV - Prepare GitHub release 
-        if: needs.build.outputs.do_dev_release
-        run: |
-          gh release delete ${{ needs.build.outputs.release_tag }} -y || true
-          gh release create ${{ needs.build.outputs.release_tag }} -p -t "Development Release - ${GITHUB_REF#refs/heads/} branch" -n 'See `Assets` section below for latest build artifacts'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: DEV - Update ${{ needs.build.outputs.release_tag }} tag
-        uses: richardsimko/update-tag@v1
-        if: needs.build.outputs.do_dev_release
-        with:
-          tag_name: ${{ needs.build.outputs.release_tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          
-      - name: Upload assets to release
-        if: needs.build.outputs.do_release
-        run: |
-          files=$(find "./artifacts/release-assets" -type f -printf "%p ")
-          gh release upload "${{ needs.build.outputs.release_tag }}" $files --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     
-
-#  publishPages:
-#    name: publishPages
-#    if: needs.build.outputs.do_release
-#    needs: [build]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Check-out existing docs from gh-pages branch
-#        uses: actions/checkout@v4
-#        with:
-#          ref: gh-pages
-#          path: docs
-#
-#      - name: Download artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          path: ./artifacts
-#          name: build-output
-#
-#      - name: Update documentation from artifact
-#        run: |
-#          # Delete all Git-related files
-#          rm -rf docs/.git*
-#
-#          # Extract top-level documentation resources
-#          # TODO Should we do this only when building a release, or also for dev_v2.x,
-#          #      or for all (dev & release) versions like we do now?
-#          unzip -o artifacts/docs-gh-pages.zip -d "docs"
-#
-#          # Define the output directory, based on tag/branch name
-#          versionDir=docs/${{ needs.build.outputs.release_tag }}
-#
-#          # Delete, recreate and fill the directory for the current tag/branch name,
-#          # while leaving documentation for other tags/branches intact (as checked out above)
-#          rm -rf "${versionDir}"
-#          mkdir -p "${versionDir}"
-#          unzip artifacts/docs-jekyll.zip -d "${versionDir}"
-#
-#          # Recreate version data files, which may be empty if no versions available
-#          cd docs
-#          mkdir -p _data/versions
-#          touch _data/versions/release.yml
-#          touch _data/versions/dev.yml
-#          ls -d v*.*.* | sort -rV | while read line; do echo "- '$line'"; done > _data/versions/release.yml
-#          ls -d dev_* | sort | while read line; do echo "- '$line'"; done > _data/versions/dev.yml
-#
-#      - name: Deploy documentation
-#        uses: peaceiris/actions-gh-pages@v4
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: ./docs
-#          enable_jekyll: true
