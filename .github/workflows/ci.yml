@@ -325,9 +325,9 @@ jobs:
         - name: Export the images as files
           run: |
             mkdir fcli-images
-            docker save -o fcli-images/fcli-scratch.tar fcli-scratch:latest
-            docker save -o fcli-images/fcli-ubi.tar fcli-ubi:latest
-            docker save -o fcli-images/fcli-alpine.tar fcli-alpine:latest
+            docker save -o fcli-images/fcli-scratch.tar fcli-scratch
+            docker save -o fcli-images/fcli-ubi.tar fcli-ubi
+            docker save -o fcli-images/fcli-alpine.tar fcli-alpine
 
         - name: Upload
           uses: actions/upload-artifact@v4
