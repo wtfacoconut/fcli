@@ -326,7 +326,7 @@ jobs:
           run: |
             mkdir fcli-images
             docker save -o fcli-images/fcli-scratch.tar fcli-scratch
-            docker save -o fcli-images/fcli-ubi.tar fcli-ubi
+            docker save -o fcli-images/fcli-ubi.tar fcli-ubi⁹
             docker save -o fcli-images/fcli-alpine.tar fcli-alpine
 
         - name: Upload
