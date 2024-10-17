@@ -9,7 +9,7 @@ on:
 env:
   native_image_opts: --verbose -H:Log=registerResource:verbose -H:+PrintClassInitialization
   graal_distribution: graalvm-community
-  graal_java_version: 24
+  graal_java_version: 21
           
 jobs:
   build:
@@ -172,7 +172,7 @@ jobs:
           name: build-output
 
       - name: Create native fcli
-        run: native-image ${{ env.native_image_opts }} --static -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
+        run: native-image ${{ env.native_image_opts }} --libc glibc -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar fcli
 
       - name: Basic test of native fcli
         run: ./fcli --help && ./fcli get --help
