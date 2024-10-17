@@ -154,7 +154,7 @@ jobs:
   native_linux_arm64:
     name: native-image-linux-arm64
     needs: build
-    runs-on: self-hosted-ubuntu-22.04-arm64
+    runs-on: self-hosted-ubuntu-20.04-arm64
     steps:
       - name: Check-out source code
         uses: actions/checkout@v4
