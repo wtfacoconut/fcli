@@ -344,7 +344,7 @@ jobs:
 
 #          name: fcli-windows
   combine-artifacts:
-    needs: [build, native_linux_arm64]
+    needs: [build, native_linux_arm64, docker-linux-arm64]
     #needs: [build, native_linux, native_mac, native_win]
     runs-on: ubuntu-latest
     steps:
