@@ -276,7 +276,7 @@ jobs:
 
   docker-linux-arm64:
     needs: [build, native_linux_arm64]
-    runs-on: self-hosted-ubuntu-22.04-arm64
+    runs-on: self-hosted-ubuntu-20.04-arm64
     env:
       DOCKER_SRC: fcli-other/fcli-docker/linux
     steps:
