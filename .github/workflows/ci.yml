@@ -7,7 +7,7 @@ on:
       - '**'
        
 env:
-  native_image_opts: --verbose -H:Log=registerResource:verbose -H:+PrintClassInitialization -H:+UnlockExperimentalVMOptions --initialize-at-build-time=org.codehaus.stax2.typed.Base64Variant
+  native_image_opts: --verbose -H:Log=registerResource:verbose -H:+PrintClassInitialization -H:+UnlockExperimentalVMOptions
   graal_distribution: graalvm-community
   graal_java_version: 23
           
@@ -73,10 +73,10 @@ jobs:
       version_minor: ${{ env.VERSION_MINOR }}
       version_patch: ${{ env.VERSION_PATCH }}
 
-  native_linux_arm64:
-    name: native-image-linux-arm64
+  native_linux_aarch64:
+    name: native-image-linux-aarch64
+    runs-on: [self-hosted, ubuntu-20.04-aarch64]
     needs: build
-    runs-on: self-hosted-ubuntu-22.04-arm64
     steps:
       - name: Check-out source code
         uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
           distribution: ${{ env.graal_distribution }}
           java-version: ${{ env.graal_java_version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-musl: false # Because static images on arm64 currently can't use musl
+          native-image-musl: false # Because static images on aarch64/arm64 currently can't use musl
 
       - uses: actions/download-artifact@v4
         with:
@@ -94,7 +94,7 @@ jobs:
           name: build-output
 
       - name: Create native fcli
-        run: native-image ${{ env.native_image_opts }} -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI --static --libc=glibc -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar -o fcli
+        run: native-image ${{ env.native_image_opts }} -Djansi.disable=true --initialize-at-build-time=com.fortify.cli.app.FortifyCLI --static -H:ExcludeResources="org/fusesource/jansi/internal/native/.*" -jar ./artifacts/release-assets/fcli.jar -o fcli
 
       - name: Basic test of native fcli
         run: ./fcli --help && ./fcli get --help
@@ -103,16 +103,17 @@ jobs:
         run: ./fcli --version | tee /dev/stderr | grep -E '[0-9]+\.[0-9]+\.[0-9]+' >/dev/null || (echo "fcli --version doesn't output proper version number"; exit 1)
 
       - name: Package native fcli
-        run: tar -zcvf artifacts/release-assets/fcli-linux-arm64.tgz fcli -C ./artifacts fcli_completion
+        run: tar -zcvf artifacts/release-assets/fcli-linux-aarch64.tgz fcli -C ./artifacts fcli_completion
 
       - uses: actions/upload-artifact@v4
         with:
-          path: ./artifacts/**/fcli-linux-arm64.tgz
-          name: fcli-linux-arm64
+          path: ./artifacts/**/fcli-linux-aarch64.tgz
+          name: fcli-linux-aarch64
 
-  docker-linux-arm64:
-    needs: [build, native_linux_arm64]
-    runs-on: self-hosted-ubuntu-20.04-arm64
+  docker-linux-aarch64:
+    name: Build aarch64 linux containers
+    needs: [build, native_linux_aarch64]
+    runs-on: [self-hosted, ubuntu-20.04-aarch64]
     env:
       DOCKER_SRC: fcli-other/fcli-docker/linux
     steps:
@@ -123,12 +124,12 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             path: ./artifacts
-            name: fcli-linux-arm64
+            name: fcli-linux-aarch64
 
         - name: Build & test Linux images
           shell: bash
           run: |
-            tar -zxvf ./artifacts/release-assets/fcli-linux-arm64.tgz -C ${DOCKER_SRC}
+            tar -zxvf ./artifacts/release-assets/fcli-linux-aarch64.tgz -C ${DOCKER_SRC}
             cd ${DOCKER_SRC}
             for i in scratch alpine ubi9
             do
@@ -163,4 +164,4 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
             path: ./fcli-images/*.tar
-            name: fcli-linux-arm64-images
+            name: fcli-linux-aarch64-images
