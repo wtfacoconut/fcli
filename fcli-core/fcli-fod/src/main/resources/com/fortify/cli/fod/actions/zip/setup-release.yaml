@@ -53,6 +53,7 @@ parameters:
     name: sdlc-status
     cliAliases: status
     description: "See `fcli fod release create`"
+    defaultValue: Development
   - group: sast_setup_opts
     name: assessment-type
     required: false
