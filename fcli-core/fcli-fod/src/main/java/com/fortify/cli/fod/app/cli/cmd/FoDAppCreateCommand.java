@@ -15,9 +15,6 @@ package com.fortify.cli.fod.app.cli.cmd;
 import static com.fortify.cli.common.util.DisableTest.TestType.MULTI_OPT_PLURAL_NAME;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fortify.cli.common.cli.util.EnvSuffix;
@@ -27,11 +24,7 @@ import com.fortify.cli.common.output.transform.IRecordTransformer;
 import com.fortify.cli.common.util.DisableTest;
 import com.fortify.cli.common.util.StringUtils;
 import com.fortify.cli.fod._common.output.cli.cmd.AbstractFoDJsonNodeOutputCommand;
-import com.fortify.cli.fod._common.util.FoDEnums;
-import com.fortify.cli.fod.access_control.helper.FoDUserGroupHelper;
-import com.fortify.cli.fod.access_control.helper.FoDUserHelper;
 import com.fortify.cli.fod.app.attr.cli.mixin.FoDAttributeUpdateOptions;
-import com.fortify.cli.fod.app.attr.helper.FoDAttributeHelper;
 import com.fortify.cli.fod.app.cli.mixin.FoDAppTypeOptions;
 import com.fortify.cli.fod.app.cli.mixin.FoDCriticalityTypeOptions;
 import com.fortify.cli.fod.app.cli.mixin.FoDMicroserviceAndReleaseNameResolverMixin;
@@ -85,26 +78,19 @@ public class FoDAppCreateCommand extends AbstractFoDJsonNodeOutputCommand implem
         var releaseNameDescriptor = releaseNameResolverMixin.getMicroserviceAndReleaseNameDescriptor();
         var microserviceName = releaseNameDescriptor.getMicroserviceName();
         validateMicroserviceName(microserviceName);
-
-        var ownerId = FoDUserHelper.getUserDescriptor(unirest, owner, true).getUserId();
-        List<String> microservices = StringUtils.isBlank(microserviceName)
-                ? Collections.emptyList() : new ArrayList<>(Arrays.asList(microserviceName));
         FoDAppCreateRequest appCreateRequest = FoDAppCreateRequest.builder()
                 .applicationName(applicationName)
                 .applicationDescription(description)
-                .businessCriticalityType(criticalityType.getCriticalityType().name())
-                .emailList(FoDAppHelper.getEmailList(notifications))
-                .releaseName(releaseNameDescriptor.getReleaseName())
+                .businessCriticality(criticalityType.getCriticalityType())
+                .notify(notifications)
+                .microserviceAndReleaseNameDescriptor(releaseNameDescriptor)
                 .releaseDescription(releaseDescription)
-                .sdlcStatusType(String.valueOf(sdlcStatus.getSdlcStatusType()))
-                .ownerId(ownerId)
-                .applicationType(appType.getAppType().getFoDValue())
-                .hasMicroservices(appType.getAppType().isMicroservice())
-                .microservices(FoDAppHelper.getMicroservicesNode(microservices))
-                .attributes(FoDAttributeHelper.getAttributesNode(unirest, FoDEnums.AttributeTypes.All, 
-                    appAttrs.getAttributes(), autoRequiredAttrs))
-                .userGroupIds(FoDUserGroupHelper.getUserGroupsNode(unirest, userGroups)).build();
-
+                .sdlcStatus(sdlcStatus.getSdlcStatusType())
+                .owner(unirest, owner)
+                .appType(appType.getAppType())
+                .autoAttributes(unirest, appAttrs.getAttributes(), autoRequiredAttrs)
+                .userGroups(unirest, userGroups)
+                .build().validate();
         return FoDAppHelper.createApp(unirest, appCreateRequest).asJsonNode();
     }
 

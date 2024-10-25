@@ -90,6 +90,11 @@ public class FoDMicroserviceHelper {
                 .body(body).asObject(JsonNode.class).getBody();
         return getDescriptor(appDescriptor, response, msRequest.getMicroserviceName());
     }
+    
+    public static final FoDMicroserviceDescriptor createMicroservice(UnirestInstance unirest, FoDAppDescriptor appDescriptor, String microserviceName) {
+        var request = FoDMicroserviceUpdateRequest.builder().microserviceName(microserviceName).build();
+        return createMicroservice(unirest, appDescriptor, request);
+    }
 
     public static final FoDMicroserviceDescriptor updateMicroservice(UnirestInstance unirest, FoDMicroserviceDescriptor currentMs, FoDMicroserviceUpdateRequest msRequest) {
         FoDAppDescriptor appDescriptor = FoDAppHelper.getAppDescriptor(unirest, currentMs.getApplicationId(), true);

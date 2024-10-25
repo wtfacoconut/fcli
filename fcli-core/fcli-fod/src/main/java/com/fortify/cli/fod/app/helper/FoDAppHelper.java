@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fortify.cli.common.json.JsonHelper;
-import com.fortify.cli.common.util.StringUtils;
 import com.fortify.cli.fod._common.rest.FoDUrls;
 import com.fortify.cli.fod._common.rest.helper.FoDDataHelper;
 import com.fortify.cli.fod.app.cli.mixin.FoDAppTypeOptions.FoDAppType;
@@ -62,16 +61,8 @@ public class FoDAppHelper {
     }
 
     public static final FoDAppDescriptor createApp(UnirestInstance unirest, FoDAppCreateRequest appCreateRequest) {
-        ObjectNode body = objectMapper.valueToTree(appCreateRequest);
-        // if microservice, remove applicationType field and set releaseMicroserviceName if not already set
-        if (appCreateRequest.getHasMicroservices()) {
-            body.remove("applicationType");
-            if (StringUtils.isBlank(appCreateRequest.getReleaseMicroserviceName())) {
-                body.replace("releaseMicroserviceName", appCreateRequest.getMicroservices().get(0));
-            }
-        }
         var appId = unirest.post(FoDUrls.APPLICATIONS)
-                .body(body).asObject(JsonNode.class).getBody().get("applicationId").asText();
+                .body(appCreateRequest.asObjectNode()).asObject(JsonNode.class).getBody().get("applicationId").asText();
         return getAppDescriptor(unirest, appId, true);
     }
 
