@@ -27,7 +27,8 @@ import picocli.CommandLine.Command;
                 FoDReleaseUpdateCommand.class,
                 FoDReleaseDeleteCommand.class,
                 FoDReleaseAssessmentTypeListCommand.class,
-                FoDReleaseScanListCommand.class
+                FoDReleaseScanListCommand.class,
+                FoDReleaseWaitForCommand.class
         }
 )
 @DefaultVariablePropertyName("releaseId")

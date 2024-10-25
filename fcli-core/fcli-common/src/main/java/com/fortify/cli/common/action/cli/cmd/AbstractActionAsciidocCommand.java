@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,14 +115,28 @@ public abstract class AbstractActionAsciidocCommand extends AbstractRunnableComm
     
     private final String addLinks(String contents) {
         if ( manpageDir==null ) { return contents; }
+        // TODO Do we want to automatically insert fcli links (which could potentially lead to bugs as seen with 
+        //      https://github.com/fortify/fcli/issues/622), or should we allow Markdown syntax in action descriptions?
+        //      We could either add support for new markdownDescription properties, or allow Markdown in existing
+        //      description properties and clean this up in the 'action help' command.
         var manPages = listDir(manpageDir).stream().filter(s->s.matches("fcli-[\\w-]+-[\\w-]+-[\\w-]+.adoc"))
             .map(s->s.replaceAll("\\.adoc", ""))
+            .sorted((a,b)->Integer.compare(a.length(), b.length())) // In case of overlapping names, we need to replace longest matching name
             .collect(Collectors.toSet());
         for ( var manPage : manPages ) {
             var pattern = manPage.replace("-", "[ -]");
             var replacement = String.format("link:manpage/%s.html[$1]", manPage);
-            contents = contents.replaceAll("(?<!`)("+pattern+")", replacement);
-            contents = contents.replaceAll("(`"+pattern+".*`)", replacement);
+            if ( manPage.matches("fcli-[a-z]+-action-run") ) {
+                // Replace 'fcli <module> action run' references in synopsis
+                contents = contents.replaceAll("("+pattern+")", replacement);  
+            } else {
+                // Replace literal 'fcli *' references embedded in backticks, if not preceded by '['
+                // as that (likely) means we already generated a link for a longer command name.
+                // See https://github.com/fortify/fcli/issues/622 for example. The backticks need to
+                // go into the link text (as otherwise link:... would be rendered literally), so we
+                // need to include the full text between the backticks in the link text.
+                contents = contents.replaceAll("(?<!\\[)(`"+pattern+".*`)", replacement);
+            }
         }
         return contents;
     }

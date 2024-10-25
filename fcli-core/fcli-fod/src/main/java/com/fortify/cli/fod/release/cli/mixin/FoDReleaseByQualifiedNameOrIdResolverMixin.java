@@ -13,6 +13,11 @@
 
 package com.fortify.cli.fod.release.cli.mixin;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fortify.cli.common.cli.util.EnvSuffix;
 import com.fortify.cli.common.util.StringUtils;
 import com.fortify.cli.fod._common.cli.mixin.FoDDelimiterMixin;
@@ -43,6 +48,23 @@ public class FoDReleaseByQualifiedNameOrIdResolverMixin {
             return descriptor==null ? null : descriptor.getReleaseId();
         }
     }
+    
+    public static abstract class AbstractFoDMultiQualifiedReleaseNameOrIdResolverMixin implements IFoDDelimiterMixinAware {
+        @Setter private FoDDelimiterMixin delimiterMixin;
+        public abstract String[] getQualifiedReleaseNamesOrIds();
+
+        public FoDReleaseDescriptor[] getReleaseDescriptors(UnirestInstance unirest, String... fields) {
+            return Stream.of(getQualifiedReleaseNamesOrIds()).map(nameOrId->FoDReleaseHelper.getReleaseDescriptor(unirest, nameOrId, delimiterMixin.getDelimiter(), true, fields)).toArray(FoDReleaseDescriptor[]::new);
+        }
+
+        public Collection<JsonNode> getReleaseDescriptorJsonNodes(UnirestInstance unirest, String... fields) {
+            return Stream.of(getReleaseDescriptors(unirest, fields)).map(FoDReleaseDescriptor::asJsonNode).collect(Collectors.toList());
+        }
+
+        public Integer[] getReleaseIds(UnirestInstance unirest) {
+            return Stream.of(getReleaseDescriptors(unirest, "releaseId")).map(FoDReleaseDescriptor::getReleaseId).toArray(Integer[]::new);
+        }
+    }
 
     public static class RequiredOption extends AbstractFoDQualifiedReleaseNameOrIdResolverMixin {
         @Option(names = {"--release", "--rel"}, required = true, paramLabel = "id|app[:ms]:rel", descriptionKey = "fcli.fod.release.resolver.name-or-id")
@@ -62,5 +84,10 @@ public class FoDReleaseByQualifiedNameOrIdResolverMixin {
     public static class OptionalCopyFromOption extends AbstractFoDQualifiedReleaseNameOrIdResolverMixin {
         @Option(names = {"--copy-from"}, required = false, paramLabel = "id|app[:ms]:rel", descriptionKey = "fcli.fod.release.resolver.copy-from.nameOrId")
         @Getter private String qualifiedReleaseNameOrId;
+    }
+    
+    public static class PositionalParameterMulti extends AbstractFoDMultiQualifiedReleaseNameOrIdResolverMixin {
+        @Parameters(index = "0", arity = "1..", paramLabel="id|app[:ms]:rel", descriptionKey = "fcli.fod.release.resolver.multi-name-or-id")
+        @Getter private String[] qualifiedReleaseNamesOrIds;
     }
 }

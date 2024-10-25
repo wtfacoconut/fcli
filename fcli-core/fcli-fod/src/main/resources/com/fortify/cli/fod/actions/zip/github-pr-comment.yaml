@@ -134,7 +134,7 @@ valueTemplates:
       
   - name: reviewBody
     contents: |
-      ## Fortify vulnerability summary (PREVIEW)
+      ## Fortify vulnerability summary
       
       Any issues listed below are based on comparing the latest scan results against the previous scan results in FoD release [${parameters.release.applicationName}${#isNotBlank(parameters.release.microserviceNae)?'- '+parameters.release.microserviceName:''} - ${parameters.release.releaseName}](${#fod.releaseBrowserUrl(parameters.release)}). This is for informational purposes only and, depending on workflow, may not be an accurate representation of what issues will be introduced into or removed from the target branch when merging this PR.   
       
