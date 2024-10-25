@@ -96,6 +96,9 @@ steps:
       - to: stdout
         value: |
           Create application release ${parameters.release} (id ${createRelease[0].releaseId}): ${createRelease[0].__action__}
+  - progress: "Waiting for release to leave suspended state"
+  - fcli:
+    - args: fod release wait-for "${parameters.release}" --progress=none
   - if: ${parameters["scan-types"].contains("sast")}
     steps:
       - if: ${parameters.profile=="default"}
