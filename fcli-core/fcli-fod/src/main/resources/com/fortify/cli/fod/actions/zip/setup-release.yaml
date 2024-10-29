@@ -52,8 +52,34 @@ parameters:
     required: true
     name: sdlc-status
     cliAliases: status
-    description: "See `fcli fod release create`"
+    description: "See `fcli fod release create`. Default value: Development"
     defaultValue: Development
+  - group: rel_create_opts
+    required: false
+    name: app-description
+    description: "See `fcli fod release create`"
+  - group: rel_create_opts
+    required: false
+    name: app-notify
+    description: "See `fcli fod release create`"
+  - group: rel_create_opts
+    required: false
+    name: app-owner
+    description: "See `fcli fod release create`"
+  - group: rel_create_opts
+    required: false
+    name: app-groups
+    description: "See `fcli fod release create`"
+  - group: rel_create_opts
+    required: false
+    name: app-type
+    description: "See `fcli fod release create`. Default value: Web"
+    defaultValue: Web
+  - group: rel_create_opts
+    required: false
+    name: app-criticality
+    description: "See `fcli fod release create`. Default value: Medium"
+    defaultValue: Medium
   - group: sast_setup_opts
     name: assessment-type
     required: false
@@ -95,7 +121,7 @@ steps:
   - write:
       - to: stdout
         value: |
-          Create application release ${parameters.release} (id ${createRelease[0].releaseId}): ${createRelease[0].__action__}
+          Create application release ${parameters.release} (id ${createRelease[0].releaseId}): ${createRelease[0].__action__.replaceAll('\n', ', ')}
   - progress: "Waiting for release to leave suspended state"
   - fcli:
     - args: fod release wait-for "${parameters.release}" --progress=none
