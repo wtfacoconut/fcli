@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.9.0](https://github.com/fortify/fcli/compare/v2.8.0...v2.9.0) (2024-10-30)
+
+
+### Features
+
+* `fcli fod action run setup-release`: Add support for creating parent application & microservice if not existing ([9e3a8fd](https://github.com/fortify/fcli/commit/9e3a8fd4d1e49195eee9468ab01d52c93c0688f0))
+* `fcli fod release create`: Add support for creating parent application & microservice if not existing ([576b620](https://github.com/fortify/fcli/commit/576b6200f28ff96f159e9f154562895b7c245259))
+* `fcli fod release create`: Ignore `--copy-from` if equal to release being created ([576b620](https://github.com/fortify/fcli/commit/576b6200f28ff96f159e9f154562895b7c245259))
+* `fcli fod release create`: Ignore `--copy-from` if first release on new application ([576b620](https://github.com/fortify/fcli/commit/576b6200f28ff96f159e9f154562895b7c245259))
+* `fcli fod release create`: Throw user-friendly error when trying to copy release from different application ([576b620](https://github.com/fortify/fcli/commit/576b6200f28ff96f159e9f154562895b7c245259))
+
+
+### Bug Fixes
+
+* Improve parsing of boolean action parameters ([d3b6f4c](https://github.com/fortify/fcli/commit/d3b6f4c260580c6db7f0edcc175dc354db72eae1))
+
 ## [2.8.0](https://github.com/fortify/fcli/compare/v2.7.1...v2.8.0) (2024-10-25)
 
 
