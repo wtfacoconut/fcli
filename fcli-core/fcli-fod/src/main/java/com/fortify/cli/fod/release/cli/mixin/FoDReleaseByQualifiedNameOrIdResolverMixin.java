@@ -22,6 +22,7 @@ import com.fortify.cli.common.cli.util.EnvSuffix;
 import com.fortify.cli.common.util.StringUtils;
 import com.fortify.cli.fod._common.cli.mixin.FoDDelimiterMixin;
 import com.fortify.cli.fod._common.cli.mixin.IFoDDelimiterMixinAware;
+import com.fortify.cli.fod.release.helper.FoDQualifiedReleaseNameDescriptor;
 import com.fortify.cli.fod.release.helper.FoDReleaseDescriptor;
 import com.fortify.cli.fod.release.helper.FoDReleaseHelper;
 
@@ -35,6 +36,13 @@ public class FoDReleaseByQualifiedNameOrIdResolverMixin {
     public static abstract class AbstractFoDQualifiedReleaseNameOrIdResolverMixin implements IFoDDelimiterMixinAware {
         @Setter private FoDDelimiterMixin delimiterMixin;
         public abstract String getQualifiedReleaseNameOrId();
+        
+        public final FoDQualifiedReleaseNameDescriptor getQualifiedReleaseNameDescriptor() {
+            var qualifiedReleaseNameOrId = getQualifiedReleaseNameOrId();
+            var delimiter = delimiterMixin.getDelimiter();
+            if (qualifiedReleaseNameOrId == null || !qualifiedReleaseNameOrId.contains(delimiter)) { return null; }
+            return FoDQualifiedReleaseNameDescriptor.fromQualifiedReleaseName(qualifiedReleaseNameOrId, delimiter);
+        }
 
         public FoDReleaseDescriptor getReleaseDescriptor(UnirestInstance unirest, String... fields) {
             var qualifiedReleaseNameOrId = getQualifiedReleaseNameOrId();

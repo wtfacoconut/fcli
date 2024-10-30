@@ -2,26 +2,25 @@
 
 author: Fortify
 usage:
-  header: (PREVIEW) Set up application version. 
+  header: Set up application version. 
   description: |
-    This action is primarily meant for use in CI/CD integrations, allowing users to 
-    provide a custom action with a customized application version setup process if
-    necessary. 
-    
-    For example, such a custom action could define standard profiles (based on team,
-    business unit, application type/risk, ...) with predefined users, attributes or 
-    issue template to be set on newly created application versions. Of course, instead
-    of having a single custom action that defines profiles, you could also provide
-    multiple custom actions that users can select from, or you can use a combination;
-    each business unit or team providing their own custom action, with each of these
-    custom actions defining profiles for different application types/risk. 
-    
-    This built-in action only provides a 'default' profile that simply invokes the 
-    `fcli ssc appversion create` command, passing the following options by default: 
-    `--skip-if-exists`, `--auto-required-attrs`, `--refresh`, `--refresh-timeout 300s`.
-    Additional creation options can be passed through the various action options, which
-    includes the ability to override the default refresh timeout (only applicable when
-    copying an existing application version).
+      This action allows for preparing an application version for running an application
+      security scan, creating the application and/or release if they do not exist yet.
+      
+      Although the same functionality can be achieved by manually running the 
+      `fcli ssc appversion create` command, this action provides a convenient and 
+      standardized approach for running this command with some default options like
+      `--skip-if-exists` and `--auto-required-attrs`.
+      
+      To provide even more consistency across CI/CD pipelines in your organization, it
+      is recommended to implement one or more custom setup actions that provide suitable
+      default values or even hard-coded, non-overridable values for the various options,
+      for example based on business unit, team, and/or application type. Such custom 
+      actions could for example set standard application version attributes for a 
+      particular type of application to be scanned. Alternative to implementing multiple 
+      custom actions, you may also consider implementing a single custom action that takes 
+      for example a --profile option to select between different profiles that each define 
+      appropriate option values and setup commands to run.
 
 defaults:
   requestTarget: ssc
@@ -31,11 +30,6 @@ parameters:
     cliAliases: av
     required: true
     description: "Required application version name as <appName>:<versionName>"
-  - name: profile
-    cliAliases: p
-    required: true
-    defaultValue: default
-    description: "This built-in action only supports the 'default' profile, which is selected by default"
   - group: av_create_opts
     required: false
     name: add-users
@@ -70,17 +64,10 @@ parameters:
     description: "See 'fcli ssc av create'. Default value: 300s"
   
 steps:
-  - progress: "Creating SSC application version if non-existing (profile: ${parameters.profile})"
-  - if: ${parameters.profile=="default"}
-    set:
-      - name: avCreateArgs
-        value: --skip-if-exists --auto-required-attrs --refresh ${#action.copyParametersFromGroup("av_create_opts")}
-  # Custom actions can replace/repeat the above to define custom profiles.
-  - if: ${avCreateArgs==null}
-    throw: "Invalid profile: ${parameters.profile}"
+  - progress: "Creating SSC application version if non-existing"
   - fcli:
     - name: createAppVersion
-      args: ssc av create ${parameters.appversion} ${avCreateArgs}
+      args: ssc av create ${parameters.appversion} --skip-if-exists --auto-required-attrs --refresh ${#action.copyParametersFromGroup("av_create_opts")}
   - write:
       - to: stdout
         value: |
