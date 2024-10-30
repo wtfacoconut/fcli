@@ -39,6 +39,7 @@ public final class ActionParameterHelper {
                 .name(getOptionName(parameter.getName()))
                 .aliases(getOptionAliases(parameter.getCliAliasesArray()))
                 .description(parameter.getDescription())
+                .bool(parameter.getType()!=null && parameter.getType().equals("boolean"))
                 .build());
     }
     

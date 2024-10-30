@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.8.0](https://github.com/fortify/fcli/compare/v2.7.1...v2.8.0) (2024-10-25)
+
+
+### Features
+
+* `fcli sc-sast scan start`: Add support for passing scan arguments through `--sargs` option (resolves [#449](https://github.com/fortify/fcli/issues/449)) ([#627](https://github.com/fortify/fcli/issues/627)) ([7920a40](https://github.com/fortify/fcli/commit/7920a40b0d395dc787df7d7ea621402c29545b7c))
+* Add `fcli fod release wait-for` command to wait for release(s) to leave suspended state (resolves [#624](https://github.com/fortify/fcli/issues/624)) ([0cdde30](https://github.com/fortify/fcli/commit/0cdde30583e5ba270cf3f605fedc64511164f8b8))
+
+
+### Bug Fixes
+
+* `fcli fod action run setup-release`: Add `Development` default value for `--sdlc-status` ([9a1b1bf](https://github.com/fortify/fcli/commit/9a1b1bff3fe2b68fcc35f9512cf1a85f3713691c))
+* `fcli fod action run setup-release`: Wait for release to exit suspended state ([07d0914](https://github.com/fortify/fcli/commit/07d0914964700adf33712f65b92817778b2178f2))
+* Fix fcli command links in action documentation (fixes [#622](https://github.com/fortify/fcli/issues/622)) ([fecf423](https://github.com/fortify/fcli/commit/fecf423d6d4a6cb5a31445a4bdb75b5906658be5))
+
 ## [2.7.1](https://github.com/fortify/fcli/compare/v2.7.0...v2.7.1) (2024-09-27)
 
 

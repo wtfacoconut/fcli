@@ -88,11 +88,13 @@ parameters:
   - group: sast_setup_opts
     required: false
     name: use-aviator
-    description: "See `fcli fod sast-scan setup`"      
+    description: "See `fcli fod sast-scan setup`"
+    type: boolean      
   - group: sast_setup_opts
     required: false
     name: oss
     description: "See `fcli fod sast-scan setup`" 
+    type: boolean
   - name: attributes
     required: false
     cliAliases: attrs
