@@ -28,17 +28,17 @@ public class FoDAttributeUpdateOptions {
     }
 
     public static class OptionalAttrCreateOption extends AbstractFoDAppAttributeUpdateMixin {
-        @Option(names = {"--attrs", "--attributes"}, required = false, split=",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.fod.app.create.attr")
+        @Option(names = {"--attrs", "--attributes"}, required = false, split=",", paramLabel = PARAM_LABEL)
         @Getter private Map<String, String> attributes;
     }
 
     public static class OptionalAttrOption extends AbstractFoDAppAttributeUpdateMixin {
-        @Option(names = {"--attrs", "--attributes"}, required = false, split=",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.fod.app.update.attr")
+        @Option(names = {"--attrs", "--attributes"}, required = false, split=",", paramLabel = PARAM_LABEL)
         @Getter private Map<String, String> attributes;
     }
 
     public static class RequiredPositionalParameter extends AbstractFoDAppAttributeUpdateMixin {
-        @EnvSuffix("ATTRS") @Parameters(index = "0..*", arity = "1..*", paramLabel = PARAM_LABEL, descriptionKey = "fcli.fod.app.update.attr")
+        @EnvSuffix("ATTRS") @Parameters(index = "0..*", arity = "1..*", paramLabel = PARAM_LABEL)
         @Getter private Map<String, String> attributes;
     }
 
