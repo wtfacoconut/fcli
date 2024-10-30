@@ -2,24 +2,30 @@
 
 author: Fortify
 usage:
-  header: (PREVIEW) Set up application release. 
+  header: Set up application release. 
   description: |
-    his action is primarily meant for use in CI/CD integrations, allowing users to 
-    rovide a custom action with a customized application release setup process if
-    ecessary. 
-      
-    For example, such a custom action could define standard profiles (based on team,
-    business unit, application type/risk, ...) with predefined users, attributes or 
-    issue template to be set on newly created application releases. Of course, instead
-    of having a single custom action that defines profiles, you could also provide
-    multiple custom actions that users can select from, or you can use a combination;
-    each business unit or team providing their own custom action, with each of these
-    custom actions defining profiles for different application types/risk. 
-      
-    This built-in action only provides a 'default' 
-    profile that simply invokes the `fcli fod release create` and optionally
-    `fcli fod sast-scan setup` commands with some default options, amended with
-    options passed to this action.
+    This action allows for preparing an application release for running an application
+    security scan. It will create the application and/or release if they do not exist
+    yet, and optionally configure scan settings. For now, only static scan setup is
+    supported, including optional software composition analysis. Support for other 
+    scan types like Dynamic or Mobile may be added in the future, or you may consider 
+    implementing a custom setup action to set up other scan types.
+    
+    Although the same functionality can be achieved by manually running the various 
+    fcli commands used by this action, like `fcli fod release create` and 
+    `fcli fod sast-scan setup`, this action provides a convenient and standardized
+    approach for running those commands, providing default values for many of the
+    required options. 
+    
+    To provide even more consistency across CI/CD pipelines in your organization, it
+    is recommended to implement one or more custom setup actions that provide suitable
+    default values or even hard-coded, non-overridable values for the various options,
+    for example based on business unit, team, and/or application type. Such custom 
+    actions could for example set standard application or release attributes for a 
+    particular type of application to be scanned. Alternative to implementing multiple 
+    custom actions, you may also consider implementing a single custom action that takes 
+    for example a --profile option to select between different profiles that each define 
+    appropriate option values and setup commands to run.
 
 defaults:
   requestTarget: fod
@@ -29,16 +35,16 @@ parameters:
     cliAliases: rel
     required: true
     description: "Required release name as <application>[:<microservice>]:<release>"
-  - name: profile
-    cliAliases: p
-    required: true
-    defaultValue: default
-    description: "This built-in action only supports the 'default' profile, which is selected by default"
   - name: scan-types
     cliAliases: t
     required: false
     type: array
     description: "Optional comma-separated list of scan type(s) to set up; for now, only 'sast' is supported"  
+  - group: rel_create_opts
+    name: attributes
+    required: false
+    cliAliases: attrs
+    description: "Optional comma-separated list of attributes to set on the application and/or release"   
   - group: rel_create_opts
     required: false
     name: copy-from
@@ -94,32 +100,13 @@ parameters:
     required: false
     name: oss
     description: "See `fcli fod sast-scan setup`" 
-    type: boolean
-  - name: attributes
-    required: false
-    cliAliases: attrs
-    description: "Optional comma-separated list of attributes to set on the application and/or release"     
+    type: boolean  
   
 steps:
-  - progress: "Creating FoD application release if non-existing (profile: ${parameters.profile})"
-  - if: ${parameters['attributes']!=null}
-    set:
-      - name: customAttrArgs
-        value: --attrs "${parameters['attributes']}"
-  - if: ${parameters['attributes']==null}
-    set:
-      - name: customAttrArgs
-        value: --auto-required-attrs  
-  - if: ${parameters.profile=="default"}
-    set:
-      - name: relCreateArgs
-        value: --skip-if-exists ${#action.copyParametersFromGroup("rel_create_opts")} ${customAttrArgs}    
-  # Custom actions can replace/repeat the above to define custom profiles.
-  - if: ${relCreateArgs==null}
-    throw: "Invalid profile: ${parameters.profile}"
+  - progress: "Creating FoD application & release if non-existing" 
   - fcli:
     - name: createRelease
-      args: fod release create "${parameters.release}" ${relCreateArgs}
+      args: fod release create "${parameters.release}" --skip-if-exists --auto-required-attrs ${#action.copyParametersFromGroup("rel_create_opts")}
   - write:
       - to: stdout
         value: |
@@ -128,21 +115,13 @@ steps:
   - fcli:
     - args: fod release wait-for "${parameters.release}" --progress=none
   - if: ${parameters["scan-types"].contains("sast")}
-    steps:
-      - if: ${parameters.profile=="default"}
-        set:
-         - name: sastSetupArgs
-           value: --skip-if-exists --frequency "Subscription" --audit-preference Automated ${#action.copyParametersFromGroup("sast_setup_opts")}          
+    steps:        
       - progress: "Configuring FoD application release ${parameters.release} for SAST scanning"
       - fcli:
         - name: setupSast
-          args: fod sast-scan setup --rel "${parameters.release}" ${sastSetupArgs} 
+          args: fod sast-scan setup --rel "${parameters.release}" --skip-if-exists --frequency "Subscription" --audit-preference Automated ${#action.copyParametersFromGroup("sast_setup_opts")}
       - write:
         - to: stdout
           value: |
             SAST scan setup status: ${setupSast[0].__action__}
-  - if: ${parameters["scan-types"].contains("dast")}
-    steps:
-      - if: ${parameters.profile=="default"}      
-      # Custom actions can replace the above to define DAST setup.
       
