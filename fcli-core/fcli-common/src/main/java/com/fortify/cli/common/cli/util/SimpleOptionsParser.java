@@ -45,6 +45,7 @@ public final class SimpleOptionsParser {
         String getName();
         List<String> getAliases();
         String getDescription();
+        boolean isBool();
         
         default String getOptionNamesAndAliasesString(String delimiter) {
             var name = getName();
@@ -59,6 +60,7 @@ public final class SimpleOptionsParser {
         private final String name;
         private final List<String> aliases;
         private final String description;
+        private final boolean bool;
     }
     
     @Data
@@ -107,13 +109,16 @@ public final class SimpleOptionsParser {
                 var argWithPossibleValue = argsDeque.pop();
                 var argElts = argWithPossibleValue.split("=", 2);
                 var arg = argElts[0];
-                if ( !optionsByNameAndAliases.containsKey(arg) ) {
+                var optionDescriptor = optionsByNameAndAliases.get(arg);
+                if ( optionDescriptor==null ) {
                     validationErrors.add("Unknown command line option: "+arg);
                 } else if ( argElts.length==2 ) {
                     result.put(arg, argElts[1]);
                 } else {
                     var nextArg = argsDeque.peek(); 
-                    var value = optionsByNameAndAliases.containsKey(nextArg) ? null : argsDeque.pop();
+                    var value = nextArg==null || optionsByNameAndAliases.containsKey(nextArg) 
+                            ? (optionDescriptor.isBool() ? "true" : null)
+                            : argsDeque.pop();
                     result.put(arg, value);
                 }
             }
