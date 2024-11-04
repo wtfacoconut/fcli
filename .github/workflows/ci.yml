@@ -86,7 +86,7 @@ jobs:
           distribution: ${{ env.graal_distribution }}
           java-version: ${{ env.graal_java_version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-musl: false # Because static images on aarch64/arm64 currently can't use musl
+          native-image-musl: true # Because static images on Linux (aarch64/arm64) currently can't use musl
 
       - uses: actions/download-artifact@v4
         with:
