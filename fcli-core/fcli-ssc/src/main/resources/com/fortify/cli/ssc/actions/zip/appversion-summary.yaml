@@ -165,7 +165,7 @@ steps:
                   do:
                   - set:
                     - name: folderIssueCount
-                      value: ${issueCountsByFolder[filterset.title+':'+analysisTypeName+':'+folderName]?:0}
+                      value: ${issueCountsByFolder==null?0:issueCountsByFolder[filterset.title+':'+analysisTypeName+':'+folderName]?:0}
                   - append:
                     - name: issueCountByFolderRowValues
                       value: ${folderIssueCount}
@@ -193,7 +193,7 @@ steps:
                   do:
                   - set:
                     - name: stateIssueCount
-                      value: ${issueCountsByState[filterset.title+':'+analysisTypeName+':'+stateName]?:0}
+                      value: ${issueCountsByState==null?0:issueCountsByState[filterset.title+':'+analysisTypeName+':'+stateName]?:0}
                   - append:
                     - name: issueCountByStateRowValues
                       value: ${stateIssueCount}
@@ -215,10 +215,12 @@ steps:
               ${#join('\n', issueCountByFolderRows)}
               | **Total**              |                  | ${#join(' | ', folderNames.![#fmt('%10s', #root.folderTotals?.getRealNode()?.get(#this)?:0)])} |
               
-              | Analysis Type          | Last Scan Date   | New           | Re-introduced | Removed       | Updated       | 
+              | Analysis Type          | Last Scan Date   | New           | Re-introduced | Removed`*`    | Updated       | 
               | ---------------------- | ---------------- | ------------- | ------------- | ------------- | ------------- |
               ${#join('\n', issueCountByStateRows)}
               | **Total**              |                  | ${#join(' | ', issueStateNames.![#fmt('%13s', #root.stateTotals?.getRealNode()?.get(#this)?:0)])} |
+              
+              `*` The 'Removed' column shows the total number of removed issues for this application version, which includes issues removed in previous scans.
               
   # Write output based on data collected above, and value template defined below 
   - write:
