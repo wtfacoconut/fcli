@@ -165,7 +165,7 @@ steps:
                   do:
                   - set:
                     - name: folderIssueCount
-                      value: ${issueCountsByFolder[filterset.title+':'+analysisTypeName+':'+folderName]?:0}
+                      value: ${issueCountsByFolder==null?0:issueCountsByFolder[filterset.title+':'+analysisTypeName+':'+folderName]?:0}
                   - append:
                     - name: issueCountByFolderRowValues
                       value: ${folderIssueCount}
@@ -193,7 +193,7 @@ steps:
                   do:
                   - set:
                     - name: stateIssueCount
-                      value: ${issueCountsByState[filterset.title+':'+analysisTypeName+':'+stateName]?:0}
+                      value: ${issueCountsByState==null?0:issueCountsByState[filterset.title+':'+analysisTypeName+':'+stateName]?:0}
                   - append:
                     - name: issueCountByStateRowValues
                       value: ${stateIssueCount}
