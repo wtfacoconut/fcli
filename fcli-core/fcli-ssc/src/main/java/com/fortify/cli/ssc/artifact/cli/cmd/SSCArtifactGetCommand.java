@@ -31,7 +31,7 @@ public class SSCArtifactGetCommand extends AbstractSSCArtifactOutputCommand impl
     
     @Override
     public HttpRequest<?> getBaseRequest() {
-        return getUnirestInstance().get(SSCUrls.ARTIFACT(artifactId));
+        return getUnirestInstance().get(SSCUrls.ARTIFACT(artifactId)).queryString("embed","scans");
     }
     
     @Override
