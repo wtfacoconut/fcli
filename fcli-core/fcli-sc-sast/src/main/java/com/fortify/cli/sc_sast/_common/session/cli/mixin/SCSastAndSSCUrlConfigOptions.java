@@ -22,6 +22,6 @@ public class SCSastAndSSCUrlConfigOptions extends ConnectionConfigOptions implem
     @Option(names = {"--ssc-url"}, required = true, order=1)
     @Getter private String sscUrl;
     
-    @Option(names = {"--ctrl-url", "-curl"}, required = false, order=1)
+    @Option(names = {"--ctrl-url"}, required = false, order=1)
     @Getter private String controllerUrl;
 }
