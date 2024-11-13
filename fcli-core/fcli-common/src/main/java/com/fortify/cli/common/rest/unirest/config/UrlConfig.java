@@ -35,10 +35,11 @@ public class UrlConfig implements IUrlConfig {
     }
     
     public static final UrlConfigBuilder builderFrom(IUrlConfig other) {
+        var builder = builderFromConnectionConfig(other);
         if (null != other) {
-            return builderFrom(other).url(other.getUrl());
+            builder = builder.url(other.getUrl());
         }
-        return builderFrom(other);
+        return builder;
     }
     
     public static final UrlConfigBuilder builderFrom(IUrlConfig other, IUrlConfig overrides) {
@@ -52,7 +53,7 @@ public class UrlConfig implements IUrlConfig {
         return builder;
     }
     
-    public static final UrlConfigBuilder builderFrom(IConnectionConfig other) {
+    public static final UrlConfigBuilder builderFromConnectionConfig(IConnectionConfig other) {
         UrlConfigBuilder builder = UrlConfig.builder();
         if ( other!=null ) {
             builder = builder

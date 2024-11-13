@@ -55,7 +55,7 @@ public class SCSastSessionDescriptor extends AbstractSessionDescriptor {
     
     
     public SCSastSessionDescriptor(ISCSastAndSSCUrlConfig scSastAndSscUrlConfig, ISSCCredentialsConfig credentialsConfig, char[] scSastClientAuthToken) {
-        this.sscUrlConfig = UrlConfig.builderFrom(scSastAndSscUrlConfig).url(scSastAndSscUrlConfig.getSscUrl()).build();
+        this.sscUrlConfig = UrlConfig.builderFromConnectionConfig(scSastAndSscUrlConfig).url(scSastAndSscUrlConfig.getSscUrl()).build();
         this.predefinedSscToken = credentialsConfig.getPredefinedToken();
         this.scSastClientAuthToken = scSastClientAuthToken;
         this.cachedSscTokenResponse = getOrGenerateToken(sscUrlConfig, credentialsConfig);
@@ -166,7 +166,7 @@ public class SCSastSessionDescriptor extends AbstractSessionDescriptor {
         if (null == controllerUrl || StringUtils.isBlank(controllerUrl)) {
             controllerUrl = getScSastUrl(sscUrlConfig, activeToken);
         }
-        return UrlConfig.builderFrom(scSastAndSscUrlConfig).url(controllerUrl).build();
+        return UrlConfig.builderFromConnectionConfig(scSastAndSscUrlConfig).url(controllerUrl).build();
     }
 
     private static String getScSastUrl(IUrlConfig sscUrlConfig, char[] activeToken) {
