@@ -20,6 +20,7 @@ import spock.lang.Stepwise
 class SCSastScanSpec extends FcliBaseSpec {
     @Shared @TestResource("runtime/shared/EightBall-package.zip") String packageZip
     @Shared @TestResource("runtime/shared/EightBall-22.1.0.mbs") String packageMbs
+    @Shared @TestResource("runtime/shared/Filter.txt") String fileFilter
     String user = System.getProperty('ft.ssc.user');
     String pass = System.getProperty('ft.ssc.password');
     
@@ -46,10 +47,8 @@ class SCSastScanSpec extends FcliBaseSpec {
             verifyAll(result.stdout) {
                 size()>1
                 it[0].replace(' ', '').equals("HostnameStatePoolnameIpaddressScaversionLastseenSensorstarttime")
-                
             }
     }
-    
     
     def "extractHighestVersionSensor"() {
         def args = "util variable contents sensors -q uuid==#var('sensors').get(#var('sensors').size()-1).uuid --store highestSensor"
@@ -58,32 +57,41 @@ class SCSastScanSpec extends FcliBaseSpec {
         then:
             verifyAll(result.stdout) {
                 size()>=2
-                it[0].replace(' ', '').equals("UuidProcessuuidStateWorkerstarttimeWorkerexpirytimeLastseenLastactivityIpaddressHostnameScaversionVmnameAvailableprocessorsTotalphysicalmemoryOsnameOsversionOsarchitectureCloudpooluuidCloudpoolpathCloudpoolnameCloudpooldescriptionCloudpoolchildofglobalpoolCloudpoolisdeletableCloudpoolstatsHref")
-                
+                it[0].replace(' ', '').equals("UuidProcessuuidStateWorkerstarttimeWorkerexpirytimeLastseenLastactivityIpaddressHostnameScaversionVmnameAvailableprocessorsTotalphysicalmemoryOsnameOsversionOsarchitectureCloudpooluuidCloudpoolpathCloudpoolnameCloudpooldescriptionCloudpoolchildofglobalpoolCloudpoolisdeletableCloudpoolstatsSensorversionHref")
             }
     }
-    
-
-    def "startScan"() {
-        def args = "sc-sast scan start -v ::highestSensor::get(0).scaVersion -p=$packageZip --store upload"
-        when:
-            def result = Fcli.run(args) 
-        then:
-            verifyAll(result.stdout) {
-                size()==2
-                it[0].replace(' ', '').equals("JobtokenHasfilesScanstatePublishstateSscprocessingstateEndpointversionAction")
-            }
-    }
-    
-    def "wait-for"() {
-        // Depending on externalmetadata versions in FPR and on SSC, approval
-        // may be required
-        def args = "sc-sast scan wait-for ::upload:: -i 2s --until=all-match --any-scan-state=COMPLETED,CANCELLED,FAILED,RUNNING"
-        when:
-            def result = Fcli.run(args)
-        then:
-            verifyAll(result.stdout) {
-                //
-            }
-    }
+	
+	def "startScanFilter"() {
+		def args = "sc-sast scan start -v ::highestSensor::get(0).scaVersion -p=$packageZip --sargs -quick\\ -filter\\ file:$fileFilter --store scanfilter"
+		when:
+			def result = Fcli.run(args)
+		then:
+			verifyAll(result.stdout) {
+				size()==2
+				it[0].replace(' ', '').equals("JobtokenHasfilesScanstatePublishstateSscprocessingstateEndpointversionAction")
+			}
+	}
+	
+	def "wait-for"() {
+		// Depending on externalmetadata versions in FPR and on SSC, approval
+		// may be required
+		def args = "sc-sast scan wait-for ::scanfilter:: -i 2s --until=all-match --any-scan-state=COMPLETED,CANCELLED,FAILED"
+		when:
+			def result = Fcli.run(args)
+		then:
+			verifyAll(result.stdout) {
+				//
+			}
+	}
+	
+	def "verifyScanRule"() {
+		def args = "ssc rest call ::scanfilter::'/api/v1/cloudjobs/'+jobToken -o expr={scaArgs}"
+		when:
+			def result = Fcli.run(args)
+		then:
+			verifyAll(result.stdout) {
+				it[0].contains("-quick")
+				it[0].contains("-filter")
+			}
+	}
 }
