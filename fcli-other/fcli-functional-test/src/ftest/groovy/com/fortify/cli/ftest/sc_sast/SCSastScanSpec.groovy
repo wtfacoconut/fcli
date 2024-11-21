@@ -51,13 +51,13 @@ class SCSastScanSpec extends FcliBaseSpec {
     }
     
     def "extractHighestVersionSensor"() {
-        def args = "util variable contents sensors -q uuid==#var('sensors').get(#var('sensors').size()-1).uuid --store highestSensor"
+        def args = "util variable contents sensors -q uuid==#var('sensors').get(#var('sensors').size()-1).uuid --store highestSensor -o table=hostName,scaVersion"
         when:
             def result = Fcli.run(args)
         then:
             verifyAll(result.stdout) {
                 size()>=2
-                it[0].replace(' ', '').equals("UuidProcessuuidStateWorkerstarttimeWorkerexpirytimeLastseenLastactivityIpaddressHostnameScaversionVmnameAvailableprocessorsTotalphysicalmemoryOsnameOsversionOsarchitectureCloudpooluuidCloudpoolpathCloudpoolnameCloudpooldescriptionCloudpoolchildofglobalpoolCloudpoolisdeletableCloudpoolstatsSensorversionHref")
+                it[0].replace(' ', '').equals("HostnameScaversion")
             }
     }
 	
