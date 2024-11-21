@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.10.0](https://github.com/fortify/fcli/compare/v2.9.1...v2.10.0) (2024-11-21)
+
+
+### Features
+
+* `fcli sc-sast session login`: Allow for overriding SC SAST Controller URL (resolves [#611](https://github.com/fortify/fcli/issues/611)) ([a5eb382](https://github.com/fortify/fcli/commit/a5eb3826202f3399159541bb2a68c295654bc9ea))
+* `fcli ssc appversion update`: Add `--active` option to allow activating/deactivating applications versions (resolves [#625](https://github.com/fortify/fcli/issues/625)) ([#647](https://github.com/fortify/fcli/issues/647)) ([c2c9a33](https://github.com/fortify/fcli/commit/c2c9a33ae001df56c9e502d622129326392ec14d))
+
+
+### Bug Fixes
+
+* `fcli ssc artifact get`: Include scan data in output (resolves [#637](https://github.com/fortify/fcli/issues/637)) ([e6f1a3e](https://github.com/fortify/fcli/commit/e6f1a3eb731d8e923abc444cd2553613c6fd4714))
+
 ## [2.9.1](https://github.com/fortify/fcli/compare/v2.9.0...v2.9.1) (2024-11-07)
 
 
