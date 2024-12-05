@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.1](https://github.com/fortify/fcli/compare/v2.10.0...v2.10.1) (2024-12-05)
+
+
+### Bug Fixes
+
+* `fcli sc-sast scan start`: Output root exception if error occurs while determining .NET version ([0bb7260](https://github.com/fortify/fcli/commit/0bb7260eb664c0b90c68e7a422a09f6e0f14bc7b))
+
 ## [2.10.0](https://github.com/fortify/fcli/compare/v2.9.1...v2.10.0) (2024-11-21)
 
 
