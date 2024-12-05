@@ -51,7 +51,7 @@ public class SCSastScanStartPackageOptions implements ISCSastScanStartOptions {
             .findFirst()
             .ifPresent(this::setDotNetProperties);  
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to determine .NET version (if applicable) from package file");
+            throw new IllegalStateException("Unable to determine .NET version (if applicable) from package file", e);
         }
     }
     
