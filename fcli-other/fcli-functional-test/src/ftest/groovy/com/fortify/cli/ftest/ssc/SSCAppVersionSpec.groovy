@@ -25,7 +25,7 @@ class SSCAppVersionSpec extends FcliBaseSpec {
         then:
             verifyAll(result.stdout) {
                 size()>=2
-                it[0].replace(" ","").equals("IdApplicationnameNameIssuetemplatenameCreatedby");
+                it[0].replace(" ","").equals("IdApplicationnameNameActiveIssuetemplatenameCreatedby");
             }
     }
     
