@@ -44,6 +44,10 @@ parameters:
     description: "Analysis type for which to list vulnerabilities. Default value: SCA"
     required: true
     defaultValue: SCA
+  - name: github-api-url
+    description: 'Required GitHub API URL. Default value: GITHUB_API_URL environment variable.'
+    required: true
+    defaultValue: ${#env('GITHUB_API_URL')}
   - name: github-token
     description: 'Required GitHub Token. Default value: GITHUB_TOKEN environment variable.'
     required: true
@@ -72,7 +76,7 @@ parameters:
     
 addRequestTargets:
   - name: github
-    baseUrl: https://api.github.com
+    baseUrl: ${parameters['github-api-url']}
     headers:
       Authorization: Bearer ${parameters['github-token']}
       'X-GitHub-Api-Version': '2022-11-28'
