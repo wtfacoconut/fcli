@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.11.0](https://github.com/fortify/fcli/compare/v2.10.1...v2.11.0) (2024-12-11)
+
+
+### Features
+
+* `fcli ssc appversion list`: Add `--exclude` option to allow for excluding empty versions, or versions that have no issues assigned to current user ([ba0c126](https://github.com/fortify/fcli/commit/ba0c1263e3bafc730037c747c9bcce964dd5cfe6))
+* `fcli ssc appversion list`: Add `--include` option to allow for listing active, inactive, or both active and inactive versions ([ba0c126](https://github.com/fortify/fcli/commit/ba0c1263e3bafc730037c747c9bcce964dd5cfe6))
+
 ## [2.10.1](https://github.com/fortify/fcli/compare/v2.10.0...v2.10.1) (2024-12-05)
 
 
