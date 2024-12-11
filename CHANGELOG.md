@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.11.1](https://github.com/fortify/fcli/compare/v2.11.0...v2.11.1) (2024-12-11)
+
+
+### Bug Fixes
+
+* `fcli fod action run github-pr-comment`: Use `GITHUB_API_URL` environment variable instead of hardcoded api.github.com to avoid failure on GitHub Enterprise ([da7eba3](https://github.com/fortify/fcli/commit/da7eba35795e7ddd78084d139e0c422f2a86707a))
+* `fcli ssc action run github-pr-comment`: Use `GITHUB_API_URL` environment variable instead of hardcoded api.github.com to avoid failure on GitHub Enterprise ([da7eba3](https://github.com/fortify/fcli/commit/da7eba35795e7ddd78084d139e0c422f2a86707a))
+
 ## [2.11.0](https://github.com/fortify/fcli/compare/v2.10.1...v2.11.0) (2024-12-11)
 
 
