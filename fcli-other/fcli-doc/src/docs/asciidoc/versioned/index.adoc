@@ -304,6 +304,10 @@ When evaluating expressions, fcli configures SpEL for 'data binding and conditio
   `+fcli ... list -q 'nestedObject!=null && get("nestedObject").has("stringValue") && nestedObject.stringValue=="nestedObjectValue1"'+`
 * Nested array properties: +
   `+fcli ... list -q 'nestedObjectArray !=null && !(nestedObjectArray.isEmpty()) && get("nestedObjectArray").get(0).has("stringValue") && nestedObjectArray.get(0).stringValue=="nestedArrayValue1"'+`
+* Variable nested array property as command argument: +
+  `+fcli ... get ::yourVar::get(0).id+`
+* Variable nested array property in query and output expression: +
+  `+fcli ssc av ls -q "application.id == #var('yourVar').get(9).id" -o "expr={name} : {#var('yourVar').get(9).name} : {id}\n"+`
 
 Some SpEL operators like `matches` may throw an exception if any of the operands is `null`. For example, the following will result in an error if the `prop1` propery is `null` for any of the records returned by the `list` command: +
 
